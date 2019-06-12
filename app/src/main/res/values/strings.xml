@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Птахи України</string>
+    <string name="settings_toolbar">Про додаток</string>
+    <string name="search">Пошук</string>
+
+    <string name="all_birds">УСІ</string>
+    <string name="forest_steppe_birds">ЛІСОВІ / СТЕПОВІ</string>
+    <string name="coastal_birds">ПРИБЕРЕЖНІ</string>
+    <string name="predatory_birds">ХИЖІ</string>
+
+    <string name="about_app">«Птахи України» (v 2.1)\n© Троць Х.Т., 2018\n\nУ застосунку використані матеріали з ресурсів:\n    - праці та публікації ученого-орнітолога Геннадія Фесенка;\n   - Вікіпедія (https://uk.wikipedia.org);\n   - аудіо взято з ресурсу https://www.xeno-canto.org;\n\nЯкщо у Вас є побажання чи пропозиції - напишіть нам про них на електронну пошту.\n\n</string>
+
+
+    <string name="send_letter">Написати листа</string>
+    <string name="more_sounds">Більше звуків</string>
+    <string name="rate_app">Оцінити</string>
+    <string name="favorite">Обране</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="theme">Налаштування</string>
+
+</resources>
