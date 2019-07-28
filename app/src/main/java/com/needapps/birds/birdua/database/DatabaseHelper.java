@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * DatabaseHelper initializes the database
+ */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static String DB_NAME = "SqliteDB.db";
     private static String DB_PATH = "";

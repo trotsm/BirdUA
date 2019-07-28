@@ -1,7 +1,7 @@
 package com.needapps.birds.birdua;
 
 /**
- * class to create each bird
+ * BirdItem creates each bird
  */
 public class BirdItem {
     private int id;
@@ -10,22 +10,22 @@ public class BirdItem {
     private int[] photosDetail; // array for slider in DetailActivity
     private int photo; // one photo for RecyclerAdapter
     private int audio; // audio for DetailActivity
-    private String moresounds;
+    private String moreSounds;
 
     public BirdItem() {
     }
 
-    public BirdItem(int id, String name, String description, int photo, int audio, int[] photosDetail, String moresounds) {
+    public BirdItem(int id, String name, String description, int photo, int audio, int[] photosDetail, String moreSounds) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.setPhoto(photo);
         this.setAudio(audio);
         this.photosDetail = photosDetail;
-        this.moresounds = moresounds;
+        this.moreSounds = moreSounds;
     }
 
-    //Getter
+    // Getter
     public int getId() {
         return id;
     }
@@ -50,10 +50,10 @@ public class BirdItem {
         return photosDetail;
     }
 
-    public String getMoresounds() { return moresounds; }
+    public String getMoreSounds() { return moreSounds; }
 
 
-    //Setter
+    // Setter
     public void setId(int id) {
         this.id = id;
     }
@@ -78,7 +78,6 @@ public class BirdItem {
         this.photosDetail = photosDetail;
     }
 
-    public void setMoresounds(String moresounds) { this.moresounds = moresounds; }
-
+    public void setMoreSounds(String moreSounds) { this.moreSounds = moreSounds; }
 }
 

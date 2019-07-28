@@ -18,9 +18,9 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_theme"
+        android:id="@+id/action_settings"
         android:orderInCategory="101"
-        android:title="@string/theme"
+        android:title="@string/settings"
         app:showAsAction="never" />
 
     <item

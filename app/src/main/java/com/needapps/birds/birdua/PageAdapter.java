@@ -9,20 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * To be able to have the swipe left and right with finger gesture function, need to create another Java file which will be used together with Android ViewPager.
- * Android FragmentPagerAdapter is used when you have a limited number of tabs that want to swipe through.
+ * FragmentPagerAdapter is used when you have a limited number of tabs that want to swipe through.
  */
 public class PageAdapter extends FragmentPagerAdapter {
-    //need to define a variable that hold the size of Android Tablayout tabs and update the constructor to include that variable.
+    // need to define a variable that hold the size of Android TabLayout tabs and update the constructor to include that variable.
     private final List<Fragment> lstFragment = new ArrayList<>();
     private final List<String> lstTitles = new ArrayList<>();
 
-    // com.needapps.birds.birdua.PageAdapter constructor is use to communicate between this class and MainActivity.java.
+    // PageAdapter constructor is used to communicate between this class and MainActivity.java.
     public PageAdapter(FragmentManager fm) {
         super(fm);
     }
 
-    //getItem is where will be initialized the fragments for Android TabLayout.
     @Override
     public Fragment getItem(int position) {
         return lstFragment.get(position);
@@ -44,5 +42,4 @@ public class PageAdapter extends FragmentPagerAdapter {
         lstFragment.add(fragment);
         lstTitles.add(title);
     }
-
 }

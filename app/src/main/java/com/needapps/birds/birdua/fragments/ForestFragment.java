@@ -28,18 +28,17 @@ import com.needapps.birds.birdua.database.DatabaseHelper;
 import java.util.ArrayList;
 
 /**
- * A simple {@link Fragment} subclass.
- * second tab
+ * ForestFragment - second (Forest and Steppe) tab
  */
 public class ForestFragment extends Fragment {
-    private RecyclerView recyclerView; // helps to show items
-    private ArrayList<BirdItem> lstBird = new ArrayList<>(); // items
+    private RecyclerView forestSteppeRecyclerView; // helps to show items
+    private ArrayList<BirdItem> forestSteppeBirdsList = new ArrayList<>(); // items
     private RecyclerAdapter recyclerAdapter; // helps to show items
     private DatabaseHelper databaseHelper;
     private Cursor cursor; // to retrieve some data from database
     ViewPager viewPager; // to get position of tab
-    //if is clicked search icon, start ALL tab and EXPAND SEARCH WITH KEYBOARD
-    //by default it is false
+    // if is clicked search icon, start ALL tab and EXPAND SEARCH WITH KEYBOARD
+    // by default it is false
     public static boolean expand = false;
 
 
@@ -47,13 +46,13 @@ public class ForestFragment extends Fragment {
         // Required empty public constructor
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_forest, container, false);
-        recyclerView = v.findViewById(R.id.forest_recyclerview);
-        new AsyncLoadDatabase().execute(); //retrieve appropriate data from database
+        forestSteppeRecyclerView = v.findViewById(R.id.forest_recyclerview);
+        // retrieve appropriate data from database
+        new AsyncLoadDatabase().execute();
 
         return v;
 
@@ -63,17 +62,16 @@ public class ForestFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true); // allow search
-        lstBird = new ArrayList<>();
-        recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird);//add recycler adapter to array items
-        recyclerView.setAdapter(recyclerAdapter);
+        forestSteppeBirdsList = new ArrayList<>();
+        recyclerAdapter = new RecyclerAdapter(getActivity(), forestSteppeBirdsList);//add recycler adapter to array items
+        forestSteppeRecyclerView.setAdapter(recyclerAdapter);
     }
 
-
     /**
-     * add SearchView
-     *
-     * @param menu
-     * @param inflater
+     * Adds SearchView
+     * Redirects to All tab when search icon is clicked
+     * @param menu - menu
+     * @param inflater - inflater
      */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -84,7 +82,7 @@ public class ForestFragment extends Fragment {
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //make expand true to expand search and keyboard in All tab
+                // make expand true to expand search and keyboard in All tab
                 expand = true;
                 viewPager = (ViewPager) getActivity().findViewById(R.id.view_pager);
                 viewPager.setCurrentItem(0);
@@ -93,25 +91,24 @@ public class ForestFragment extends Fragment {
 
     }
 
-
     /**
-     * to load database with AsyncTask
+     * Loads database with AsyncTask
      */
     class AsyncLoadDatabase extends AsyncTask<Void, Void, Void> {
         /**
-         * load in first thread
+         * Loads in first thread
          */
         protected void onPreExecute() {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
-            recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird);
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(gridLayoutManager);
-            recyclerView.setAdapter(recyclerAdapter);
+            recyclerAdapter = new RecyclerAdapter(getActivity(), forestSteppeBirdsList);
+            forestSteppeRecyclerView.setHasFixedSize(true);
+            forestSteppeRecyclerView.setLayoutManager(gridLayoutManager);
+            forestSteppeRecyclerView.setAdapter(recyclerAdapter);
             recyclerAdapter.notifyDataSetChanged();
         }
 
         /**
-         * load database in background thread
+         * Loads database in background thread
          */
         @Override
         protected Void doInBackground(Void... voids) {
@@ -126,7 +123,7 @@ public class ForestFragment extends Fragment {
     }
 
     /**
-     * load database for category "forest" to show list of Forest birds in second tab
+     * Loads database for category "forest" to show list of Forest birds in second tab
      */
     public void loadDatabaseForest() {
         databaseHelper = new DatabaseHelper(getActivity());
@@ -142,20 +139,21 @@ public class ForestFragment extends Fragment {
                 if (cursor.moveToFirst()) {
                     do {
                         BirdItem birdItem = new BirdItem();
-                        birdItem.setId(cursor.getInt(0));// first column - id
-                        birdItem.setName(cursor.getString(1));// second column - name
-                        birdItem.setDescription(cursor.getString(2));// third column - description
+
+                        birdItem.setId(cursor.getInt(cursor.getColumnIndex("_id")));// first column - id
+                        birdItem.setName(cursor.getString(cursor.getColumnIndex("name")));// second column - name
+                        birdItem.setDescription(cursor.getString(cursor.getColumnIndex("description")));// third column - description
                         // fourth column - imagename
-                        String image_names = cursor.getString(3);
+                        String image_names = cursor.getString(cursor.getColumnIndex("imagename"));
                         int image = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + image_names, null, null);
                         birdItem.setPhoto(image);
 
                         // fifth column - audioname
-                        String audio_name = cursor.getString(4);
+                        String audio_name = cursor.getString(cursor.getColumnIndex("audioname"));
                         int audio = getResources().getIdentifier("com.needapps.birds.birdua:raw/" + audio_name, null, null);
                         birdItem.setAudio(audio);
                         // sixth column - imagenameslider
-                        String image_names_slider = cursor.getString(5);
+                        String image_names_slider = cursor.getString(cursor.getColumnIndex("imagenameslider"));
                         String[] images = image_names_slider.split(",");
 
                         int[] ids = new int[images.length];
@@ -163,11 +161,11 @@ public class ForestFragment extends Fragment {
                             ids[i] = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + images[i], null, null);
                         }
                         birdItem.setPhotosDetail(ids);
-
-                        birdItem.setMoresounds(cursor.getString(7));// eighth column - moresounds
+                        // eighth column - moresounds
+                        birdItem.setMoreSounds(cursor.getString(cursor.getColumnIndex("moresounds")));
 
                         //add all information to item
-                        lstBird.add(birdItem);
+                        forestSteppeBirdsList.add(birdItem);
 
                     } while (cursor.moveToNext());
                 }
@@ -178,5 +176,4 @@ public class ForestFragment extends Fragment {
         }
 
     }
-
 }

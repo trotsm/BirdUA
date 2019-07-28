@@ -28,12 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A simple {@link Fragment} subclass.
- * first tab
+ * AllFragment is first All birds tab
  */
 public class AllFragment extends Fragment implements SearchView.OnQueryTextListener {
-    private RecyclerView recyclerView; // helps to show items
-    private ArrayList<BirdItem> lstBird = new ArrayList<>(); // items
+    private RecyclerView allRecyclerView; // helps to show items
+    private ArrayList<BirdItem> birdsList = new ArrayList<>(); // items
     private RecyclerAdapter recyclerAdapter; // helps to show items
     private DatabaseHelper databaseHelper;
     private Cursor cursor; // to retrieve some data from database
@@ -48,9 +47,9 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_all, container, false);
-        recyclerView = v.findViewById(R.id.all_recyclerview);
-        new AsyncLoadDatabase().execute(); //retrieve appropriate data from database
-
+        allRecyclerView = v.findViewById(R.id.all_recyclerview);
+        // retrieve appropriate data from database
+        new AsyncLoadDatabase().execute();
         return v;
     }
 
@@ -58,16 +57,17 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true); // allow search
-        lstBird = new ArrayList<>();
-        recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird); //add recycler adapter to array items
-        recyclerView.setAdapter(recyclerAdapter);
+        birdsList = new ArrayList<>();
+        // add recycler adapter to array items
+        recyclerAdapter = new RecyclerAdapter(getActivity(), birdsList);
+        allRecyclerView.setAdapter(recyclerAdapter);
     }
 
     /**
      * add SearchView
      *
-     * @param menu
-     * @param inflater
+     * @param menu     - menu
+     * @param inflater - inflater
      */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -75,17 +75,16 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
         final MenuItem item = menu.findItem(R.id.action_search);
         searchView = (SearchView) MenuItemCompat.getActionView(item);
 
-        //if is clicked search icon in FOREST tab, start this tab and EXPAND THIS SEARCH WITH KEYBOARD
+        // if is clicked search icon in FOREST || COASTAL || PREDATORY tabs,
+        // start this tab and EXPAND THIS SEARCH WITH KEYBOARD
         if (ForestFragment.expand) {
             item.expandActionView();
             ForestFragment.expand = !ForestFragment.expand;
         }
-        //if is clicked search icon in COASTAL tab, start this tab and EXPAND THIS SEARCH WITH KEYBOARD
         if (CoastalFragment.expand) {
             item.expandActionView();
             CoastalFragment.expand = !CoastalFragment.expand;
         }
-        //if is clicked search icon in PREDATORY tab, start this tab and EXPAND THIS SEARCH WITH KEYBOARD
         if (PredatoryFragment.expand) {
             item.expandActionView();
             PredatoryFragment.expand = !PredatoryFragment.expand;
@@ -96,24 +95,27 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
                 new MenuItemCompat.OnActionExpandListener() {
                     @Override
                     public boolean onMenuItemActionCollapse(MenuItem item) {
-// Do when collapsed
-                        recyclerAdapter.setFilter(lstBird);
+                        // Do when collapsed
+                        recyclerAdapter.setFilter(birdsList);
                         return true; // Return true to collapse action view
                     }
 
                     @Override
                     public boolean onMenuItemActionExpand(MenuItem item) {
-// Do when expanded
+                        // Do when expanded
                         return true; // Return true to expand action view
                     }
                 });
     }
 
-
+    /**
+     * Is called when the query text is changed by the user
+     * @param newText - changed text
+     * @return true
+     */
     @Override
     public boolean onQueryTextChange(String newText) {
-        final List<BirdItem> filteredModelList = filter(lstBird, newText);
-
+        final List<BirdItem> filteredModelList = filter(birdsList, newText);
         recyclerAdapter.setFilter(filteredModelList);
         return true;
     }
@@ -124,11 +126,11 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
     }
 
     /**
-     * filter to search in Toolbar
+     * Filters to search in Toolbar
      *
-     * @param models
-     * @param query
-     * @return
+     * @param models - list of items
+     * @param query  - text
+     * @return filtered list
      */
     public List<BirdItem> filter(List<BirdItem> models, String query) {
         query = query.toLowerCase();
@@ -144,27 +146,29 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
 
 
     /**
-     * to load database with AsyncTask
+     * Loads database with AsyncTask
      */
     class AsyncLoadDatabase extends AsyncTask<Void, Void, Void> {
+
         /**
-         * load in first thread
+         * Loads in first thread
          */
         protected void onPreExecute() {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
-            recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird);
+            recyclerAdapter = new RecyclerAdapter(getActivity(), birdsList);
 
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(gridLayoutManager);
-            recyclerView.setAdapter(recyclerAdapter);
+            allRecyclerView.setHasFixedSize(true);
+            allRecyclerView.setLayoutManager(gridLayoutManager);
+            allRecyclerView.setAdapter(recyclerAdapter);
             recyclerAdapter.notifyDataSetChanged();
         }
 
         /**
-         * load database in background thread
+         * Loads database in background thread
          */
         @Override
         protected Void doInBackground(Void... voids) {
+            // load database data
             loadDatabaseAll();
             return null;
         }
@@ -172,11 +176,10 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
         protected void onPostExecute(Void param) {
             recyclerAdapter.notifyDataSetChanged();
         }
-
     }
 
     /**
-     * load all database
+     * Loads all database
      */
     public void loadDatabaseAll() {
         databaseHelper = new DatabaseHelper(getActivity());
@@ -187,27 +190,27 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
             e.printStackTrace();
         }
         try {
-            //load by alphabet
+            // load by alphabet
             cursor = databaseHelper.QueryData("SELECT * FROM tbl_bird ORDER BY name COLLATE NOCASE;");
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     do {
                         BirdItem birdItem = new BirdItem();
 
-                        birdItem.setId(cursor.getInt(0));// first column - id
-                        birdItem.setName(cursor.getString(1));// second column - name
-                        birdItem.setDescription(cursor.getString(2));// third column - description
+                        birdItem.setId(cursor.getInt(cursor.getColumnIndex("_id")));// first column - id
+                        birdItem.setName(cursor.getString(cursor.getColumnIndex("name")));// second column - name
+                        birdItem.setDescription(cursor.getString(cursor.getColumnIndex("description")));// third column - description
                         // fourth column - imagename
-                        String image_names = cursor.getString(3);
+                        String image_names = cursor.getString(cursor.getColumnIndex("imagename"));
                         int image = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + image_names, null, null);
                         birdItem.setPhoto(image);
 
                         // fifth column - audioname
-                        String audio_name = cursor.getString(4);
+                        String audio_name = cursor.getString(cursor.getColumnIndex("audioname"));
                         int audio = getResources().getIdentifier("com.needapps.birds.birdua:raw/" + audio_name, null, null);
                         birdItem.setAudio(audio);
                         // sixth column - imagenameslider
-                        String image_names_slider = cursor.getString(5);
+                        String image_names_slider = cursor.getString(cursor.getColumnIndex("imagenameslider"));
                         String[] images = image_names_slider.split(",");
 
                         int[] ids = new int[images.length];
@@ -215,11 +218,11 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
                             ids[i] = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + images[i], null, null);
                         }
                         birdItem.setPhotosDetail(ids);
-
-                        birdItem.setMoresounds(cursor.getString(7));// eighth column - moresounds
+                        // eighth column - moresounds
+                        birdItem.setMoreSounds(cursor.getString(cursor.getColumnIndex("moresounds")));
 
                         //add all information to item
-                        lstBird.add(birdItem);
+                        birdsList.add(birdItem);
 
                     } while (cursor.moveToNext());
                 }
@@ -229,5 +232,4 @@ public class AllFragment extends Fragment implements SearchView.OnQueryTextListe
             e.printStackTrace();
         }
     }
-
 }

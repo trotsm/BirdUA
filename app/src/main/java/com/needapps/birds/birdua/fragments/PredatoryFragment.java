@@ -28,20 +28,18 @@ import com.needapps.birds.birdua.database.DatabaseHelper;
 import java.util.ArrayList;
 
 /**
- * A simple {@link Fragment} subclass.
- * fourth tab
+ * PredatoryFragment - fourth(Predatory) tab
  */
 public class PredatoryFragment extends Fragment {
-    private RecyclerView recyclerView; // helps to show items
-    private ArrayList<BirdItem> lstBird = new ArrayList<>();
+    private RecyclerView predatoryRecyclerView; // helps to show items
+    private ArrayList<BirdItem> predatoryBirdsList = new ArrayList<>();
     private RecyclerAdapter recyclerAdapter; // helps to show items
     private DatabaseHelper databaseHelper; // to retrieve some data from database
     private Cursor cursor;
-    ViewPager viewPager;// to get position of tab
-    //if is clicked search icon, start ALL tab and EXPAND SEARCH WITH KEYBOARD
-    //by default it is false
+    ViewPager viewPager; // to get position of tab
+    // if is clicked search icon, start ALL tab and EXPAND SEARCH WITH KEYBOARD
+    // by default it is false
     public static boolean expand = false;
-
 
     public PredatoryFragment() {
         // Required empty public constructor
@@ -50,9 +48,10 @@ public class PredatoryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_forest, container, false);
-        recyclerView = v.findViewById(R.id.forest_recyclerview);
-        new AsyncLoadDatabase().execute(); //retrieve appropriate data from database
+        View v = inflater.inflate(R.layout.fragment_predatory, container, false);
+        predatoryRecyclerView = v.findViewById(R.id.predatory_recyclerview);
+        // retrieve appropriate data from database
+        new AsyncLoadDatabase().execute();
 
         return v;
     }
@@ -61,16 +60,17 @@ public class PredatoryFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true); // allow search
-        lstBird = new ArrayList<>();
-        recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird); //add recycler adapter to array items
-        recyclerView.setAdapter(recyclerAdapter);
+        predatoryBirdsList = new ArrayList<>();
+        recyclerAdapter = new RecyclerAdapter(getActivity(), predatoryBirdsList); //add recycler adapter to array items
+        predatoryRecyclerView.setAdapter(recyclerAdapter);
     }
 
     /**
-     * add SearchView
+     * Adds SearchView
+     * Redirects to All tab when search icon is clicked
      *
-     * @param menu
-     * @param inflater
+     * @param menu     - menu
+     * @param inflater - inflater
      */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -81,7 +81,7 @@ public class PredatoryFragment extends Fragment {
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //make expand true to expand search and keyboard in All tab
+                // make expand true to expand search and keyboard in All tab
                 expand = true;
                 viewPager = (ViewPager) getActivity().findViewById(R.id.view_pager);
                 viewPager.setCurrentItem(0);
@@ -91,23 +91,23 @@ public class PredatoryFragment extends Fragment {
 
 
     /**
-     * to load database with AsyncTask
+     * Loads database with AsyncTask
      */
     class AsyncLoadDatabase extends AsyncTask<Void, Void, Void> {
         /**
-         * load in first thread
+         * Loads in first thread
          */
         protected void onPreExecute() {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
-            recyclerAdapter = new RecyclerAdapter(getActivity(), lstBird);
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(gridLayoutManager);
-            recyclerView.setAdapter(recyclerAdapter);
+            recyclerAdapter = new RecyclerAdapter(getActivity(), predatoryBirdsList);
+            predatoryRecyclerView.setHasFixedSize(true);
+            predatoryRecyclerView.setLayoutManager(gridLayoutManager);
+            predatoryRecyclerView.setAdapter(recyclerAdapter);
             recyclerAdapter.notifyDataSetChanged();
         }
 
         /**
-         * load database in background thread
+         * Loads database in background thread
          */
         @Override
         protected Void doInBackground(Void... voids) {
@@ -122,7 +122,7 @@ public class PredatoryFragment extends Fragment {
     }
 
     /**
-     * load database for category "predatory" to show list of Predatory birds in fourth tab
+     * Loads database for category "predatory" to show list of Predatory birds in fourth tab
      */
     public void loadDatabasePredatory() {
         databaseHelper = new DatabaseHelper(getActivity());
@@ -138,20 +138,21 @@ public class PredatoryFragment extends Fragment {
                 if (cursor.moveToFirst()) {
                     do {
                         BirdItem birdItem = new BirdItem();
-                        birdItem.setId(cursor.getInt(0));// first column - id
-                        birdItem.setName(cursor.getString(1));// second column - name
-                        birdItem.setDescription(cursor.getString(2));// third column - description
+
+                        birdItem.setId(cursor.getInt(cursor.getColumnIndex("_id")));// first column - id
+                        birdItem.setName(cursor.getString(cursor.getColumnIndex("name")));// second column - name
+                        birdItem.setDescription(cursor.getString(cursor.getColumnIndex("description")));// third column - description
                         // fourth column - imagename
-                        String image_names = cursor.getString(3);
+                        String image_names = cursor.getString(cursor.getColumnIndex("imagename"));
                         int image = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + image_names, null, null);
                         birdItem.setPhoto(image);
 
                         // fifth column - audioname
-                        String audio_name = cursor.getString(4);
+                        String audio_name = cursor.getString(cursor.getColumnIndex("audioname"));
                         int audio = getResources().getIdentifier("com.needapps.birds.birdua:raw/" + audio_name, null, null);
                         birdItem.setAudio(audio);
                         // sixth column - imagenameslider
-                        String image_names_slider = cursor.getString(5);
+                        String image_names_slider = cursor.getString(cursor.getColumnIndex("imagenameslider"));
                         String[] images = image_names_slider.split(",");
 
                         int[] ids = new int[images.length];
@@ -159,11 +160,11 @@ public class PredatoryFragment extends Fragment {
                             ids[i] = getResources().getIdentifier("com.needapps.birds.birdua:drawable/" + images[i], null, null);
                         }
                         birdItem.setPhotosDetail(ids);
-
-                        birdItem.setMoresounds(cursor.getString(7));// eighth column - moresounds
+                        // eighth column - moresounds
+                        birdItem.setMoreSounds(cursor.getString(cursor.getColumnIndex("moresounds")));
 
                         //add all information to item
-                        lstBird.add(birdItem);
+                        predatoryBirdsList.add(birdItem);
 
                     } while (cursor.moveToNext());
                 }
@@ -174,5 +175,4 @@ public class PredatoryFragment extends Fragment {
         }
 
     }
-
 }

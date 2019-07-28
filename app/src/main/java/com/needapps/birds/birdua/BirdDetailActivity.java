@@ -27,21 +27,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-
 /**
- * class for Detail Activity when pressed item in RecyclerAdapter
+ * Detail Activity is called for each bird item when pressed the item in RecyclerAdapter
  */
 public class BirdDetailActivity extends AppCompatActivity implements BaseSliderView.OnSliderClickListener, ViewPagerEx.OnPageChangeListener {
-
-    Toolbar myToolbar; // define toolbar cause theme is noActionBar
-    ImageView img_detail; // images for slider
-    TextView description_detail; // description
+    Toolbar detailToolbar; // define toolbar cause theme is noActionBar
+    ImageView detailImage; // images for slider
+    TextView detailDescription_; // description
     SoundPool soundPool; // soundPoll for audio button
-    int soundID; // certain audio for each bird
+    int soundId; // certain audio for each bird
     private SliderLayout slider; // slider for photos
     FloatingActionButton ttsButton; // text to speech button
     TextToSpeech tts;
-    TextView moresounds;
+    TextView moreSounds;
     RecyclerAdapter recyclerAdapter;
     private SharedPreferencesManager prefs;
 
@@ -50,56 +48,56 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
         super.onCreate(savedInstanceState);
         Utils.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_bird_detail);
-
-        prefs = new SharedPreferencesManager(this);//get SharedPreferencesManager  instance
-        description_detail = (TextView) findViewById(R.id.text);
-        int ts = prefs.retrieveInt("size", 16); //get stored size from Settings, medium is default
-        description_detail.setTextSize(ts);
+        // get chosen data from Settings
+        prefs = new SharedPreferencesManager(this);//get SharedPreferencesManager instance
+        detailDescription_ = (TextView) findViewById(R.id.text);
+        int textSize = prefs.retrieveInt("size", 16); //get stored size from Settings, medium is default
+        detailDescription_.setTextSize(textSize);
 
         recyclerAdapter = new RecyclerAdapter();
-        myToolbar = (Toolbar) findViewById(R.id.my_toolbar_detail);
-        setSupportActionBar(myToolbar);
+        detailToolbar = (Toolbar) findViewById(R.id.my_toolbar_detail);
+        setSupportActionBar(detailToolbar);
         // initialize slider for images in activity
         slider = (SliderLayout) findViewById(R.id.slider);
         //INITIALIZE VIEWS
-        img_detail = (ImageView) findViewById(R.id.image_detail);
+        detailImage = (ImageView) findViewById(R.id.image_detail);
 
-        // call method for text description, tts, images slider
-        moresounds = (TextView) findViewById(R.id.more_sounds);
-        moresounds.setVisibility(View.GONE);// make button not visible
+        // call method for text description, Text to Speech, images slider
+        moreSounds = (TextView) findViewById(R.id.more_sounds);
+        moreSounds.setVisibility(View.GONE);// make button not visible
         setInformation();
         // add up/home button
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        //Hardware buttons setting to adjust the media sound
+        // Hardware buttons setting to adjust the media sound
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
-
     /**
-     * method for text description, tts, images slider
+     * Sets text description, tts, images slider
+     * from RecyclerAdapter
      */
     public void setInformation() {
         // Get the Intent from recycler adapter to extract the string - name and description
         final Intent intent = getIntent();
         String name = intent.getStringExtra(RecyclerAdapter.EXTRA_NAME);
         String description = intent.getStringExtra(RecyclerAdapter.EXTRA_DESCRIPTION);
-        final String moresoundshttps = intent.getStringExtra(RecyclerAdapter.EXTRA_MORESOUNDS);
+        final String moreSoundsLink = intent.getStringExtra(RecyclerAdapter.EXTRA_MORE_SOUNDS);
 
         // add up/home button
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(name);// set appropriate bird's name
+            getSupportActionBar().setTitle(name); // set appropriate bird name
         }
         // intent to extract images from recycler adapter
         Bundle extras = getIntent().getExtras();
         int[] images = extras.getIntArray(RecyclerAdapter.EXTRA_IMAGE_SLIDER); // get images for slider
 
-        // Capture the layout's TextView and set the string as its text
-        description_detail.setText(description);
-        //make clickable links in description
-        Linkify.addLinks(description_detail, Linkify.WEB_URLS);
+        // capture the layout's TextView and set the string as its text
+        detailDescription_.setText(description);
+        // make clickable links in description
+        Linkify.addLinks(detailDescription_, Linkify.WEB_URLS);
 
         //Text To Speech
         ttsButton = (FloatingActionButton) findViewById(R.id.btn_speak);
@@ -117,8 +115,8 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    // call method speak
-                                    speak();
+                                    // call method callTextToSpeechOnClick
+                                    callTextToSpeechOnClick();
                                 }
                             });
                         }
@@ -141,39 +139,39 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
                 }
             }
         });
-        //call the method speak to start TTS
-        speak();
+        // call the method callTextToSpeechOnClick to start TTS
+        callTextToSpeechOnClick();
 
-        // Image Slider
+        // Images Slider
         ArrayList<Integer> listImages = new ArrayList<>();
         for (int i = 0; i < images.length; i++) {
             listImages.add(images[i]);
-            //load with Glide and asBitmap
-            //add images from array to slider - img_detail
-            Glide.with(this).load(listImages.get(i)).asBitmap().into(img_detail);
+            // load with Glide and asBitmap
+            // add images from array to slider - detailImage
+            Glide.with(this).load(listImages.get(i)).asBitmap().into(detailImage);
         }
-        //call setSlider method
-        setSlider(listImages);
-        // button to go to web page
-        if (moresoundshttps != null) {
-            moresounds.setOnClickListener(new View.OnClickListener() {
+        // call setImageSlider method
+        setImageSlider(listImages);
+
+        // button to go to web page when pressed "More sounds" button
+        if (moreSoundsLink != null) {
+            moreSounds.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(moresoundshttps));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(moreSoundsLink));
                     startActivity(intent);
                 }
             });
         }
-
     }
 
     /**
-     * speak to call TTS
+     * Calls TTS
      */
-    public void speak() {
-        ttsButton.setTag(1); //when it isn't speaking
+    public void callTextToSpeechOnClick() {
+        ttsButton.setTag(1); // when it isn'theme speaking
         ttsButton.setImageResource(R.drawable.icon_text); // play icon
-        //when clicked
+        // when clicked
         ttsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -183,15 +181,15 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
                         tts.stop();
                     }
                     ttsButton.setImageResource(R.drawable.icon_text);
-                    v.setTag(1); //pause
+                    v.setTag(1); // pause
                 } else {
                     if (status == 1) {
-                        String words = description_detail.getText().toString();
+                        String words = detailDescription_.getText().toString();
                         HashMap<String, String> params = new HashMap<String, String>();
                         params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "stringId");
                         tts.speak(words, TextToSpeech.QUEUE_FLUSH, params);
                         ttsButton.setImageResource(R.drawable.icon_stop); // stop icon
-                        v.setTag(0); //stop
+                        v.setTag(0); // stop
                     }
                 }
             }
@@ -199,12 +197,12 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
     }
 
     /**
-     * Images Slider
+     * Sets up Images Slider
      *
-     * @param listImages
+     * @param listImages - array of images
      */
-    public void setSlider(ArrayList<Integer> listImages) {
-        // make slider images
+    public void setImageSlider(ArrayList<Integer> listImages) {
+        // set slider images
         for (int img : listImages) {
             DefaultSliderView defaultSliderView = new DefaultSliderView(this);
             // initialize a SliderLayout
@@ -217,26 +215,25 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
         }
         slider.setPresetTransformer(SliderLayout.Transformer.Accordion);
         slider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom); // show indicator bottom
-        slider.setDuration(4000); // show 4 seconds every image
-        slider.addOnPageChangeListener(this); // change images by clicking
+        slider.setDuration(4000); // show next image in 4 seconds
+        slider.addOnPageChangeListener(this); // change images swipe
     }
 
-
     /**
+     * Stops TTS
      * when activity is finishing
-     * stop TTS
      */
     @Override
     protected void onStop() {
         super.onStop();
         if (tts != null) {
             tts.stop();
-        } //call the method speak when activity resumed
-        speak();
+        } //call the method callTextToSpeechOnClick when activity resumed
+        callTextToSpeechOnClick();
     }
 
     /**
-     * when activity resumed
+     * Is called when activity is resumed
      */
     protected void onResume() {
         super.onResume();
@@ -244,12 +241,12 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
         int audio = extras.getInt(RecyclerAdapter.EXTRA_AUDIO); // get Audio
         if (soundPool == null) {
             soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-            soundID = soundPool.load(this, audio, 1);
+            soundId = soundPool.load(this, audio, 1);
         }
     }
 
     /**
-     * release audio
+     * Releases audio
      */
     protected void onPause() {
         super.onPause();
@@ -260,23 +257,24 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
     }
 
     /**
-     * play audio when is clicked play button
+     * Plays audio when play button is clicked
      *
-     * @param v
+     * @param v - view
      */
     public void onClick(View v) {
-        if (soundID != 0)
-            soundPool.play(soundID, 1, 1, 0, 0, 1);
-        moresounds.setVisibility(View.VISIBLE); // make button visible after on click on soundpool button
+        if (soundId != 0)
+            soundPool.play(soundId, 1, 1, 0, 0, 1);
+        // make More sounds button visible after on click on soundPool button
+        moreSounds.setVisibility(View.VISIBLE);
     }
 
     /**
-     * stop TTS,audio when activity destroyed
+     * Stops TTS, audio when activity is destroyed
      */
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        soundPool.stop(soundID);
+        soundPool.stop(soundId);
         if (tts != null) {
             tts.shutdown();
         }
@@ -288,9 +286,8 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
         slider.stopAutoCycle();
     }
 
-
     /**
-     * allow back and up/home button
+     * Allows back and up/home button
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -318,6 +315,4 @@ public class BirdDetailActivity extends AppCompatActivity implements BaseSliderV
     public void onPageScrollStateChanged(int state) {
 
     }
-
-
 }
