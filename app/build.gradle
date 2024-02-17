@@ -6,7 +6,7 @@ android {
         applicationId "com.needapps.birds.birdua"
         minSdkVersion 15
         targetSdkVersion 33
-        versionCode 7
+        versionCode 8
         versionName "3.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
